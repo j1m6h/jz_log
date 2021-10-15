@@ -5,8 +5,7 @@ enum level
 {
 	INFO,
 	WARNING,
-	ERROR,
-	CRITICAL
+	ERROR
 };
 
 void log_info(const char* txt);
