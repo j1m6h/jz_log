@@ -5,8 +5,7 @@ enum level
 {
 	INFO,
 	WARNING,
-	ERROR,
-	CRITICAL
+	ERROR
 };
 
 struct jz_log
