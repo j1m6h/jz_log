@@ -1,14 +1,23 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "jz_log.h"
 
-/* ascii color codes */
+/* ANSI color codes */
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define YELLOW "\033[33m"
 #define DEFAULT "\033[0m"
+
+struct jz_log
+{
+	FILE* file;
+	char filename[22];
+}
+
+static bool file_is_open = false;
 
 static char* get_timestamp(char* buf, size_t len)
 {
@@ -16,9 +25,22 @@ static char* get_timestamp(char* buf, size_t len)
 	struct tm* timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(buf, len, "%Y-%m-%d %I:%M:%S", timeinfo);
+	strftime(buf, len, "%Y-%m-%d %H:%M:%S", timeinfo);
 	return buf;
 }
+
+static void open_file(FILE* file, const char* path)
+{
+	file = fopen(path, "w");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Could not open file for writing");
+		file_is_open = false;
+	}
+
+	file_is_open = true;
+}
+
 
 static char* lvl_to_tag(int lvl)
 {
@@ -38,10 +60,8 @@ static void print(const char* txt, const char* col, int lvl)
 	printf("%s%s %s %s\n", col, ts, tag, txt); 
 }
 
-static void write_file(const char* txt, int lvl)
+static void write_file(const char* txt, int lvl, struct jz_log* log)
 {
-	FILE* fp;
-	char* filename;
 	char  buf[20];
 	char* ts;
 	char* tag;
@@ -50,35 +70,25 @@ static void write_file(const char* txt, int lvl)
 	ts = get_timestamp(buf, 20);
 	tag = lvl_to_tag(lvl);
 
-	/* allocate mem for the filename string */
-	filename = (char*)malloc((8 + strlen(ts) + 1) * sizeof(char));
-	strcpy(filename, "jz_log-");
-	strcat(filename, ts);
+	/* put the filename together */
+	strcpy(log->filename, "jz_log-");
+	strcat(log->filename, ts);
 
-	fp = fopen(filename, "w");
-	if (fp == NULL) 
-	{
-		print("**Failed to open log file for writing**", RED, ERROR); /* use our print func */ 
-		exit(1);
-	}
+	if (!file_is_open)
+		open_file(log->file);
 
-	fprintf(fp, "%s ", ts); /* timestamp */
-	fprintf(fp, "%s ", tag); /* level tag */
-	fprintf(fp, "%s\n", txt); /* log text */
-	
-	free(filename);
-	fclose(fp);
+	fprintf(log->file, "%s ", ts); /* timestamp */
+	fprintf(log->file, "%s ", tag); /* level tag */
+	fprintf(log->file, "%s\n", txt); /* log text */
 }
 
 size_t get_filesize(struct jz_log* log)
 {
-	FILE* fp;
 	size_t prev;
 	size_t size;
 
-	fp = fopen(log->filename, "r");
-	if (fp == NULL)
-		exit(1);
+	if (!file_is_open)
+		open_file(log->file);
 
 	prev = ftell(fp);
 	fseek(fp, 0L, SEEK_END);
@@ -103,4 +113,10 @@ void log_err(const char* txt, struct jz_log* log)
 {
 	print(txt, RED, ERROR);
 	write_file(txt, ERROR);
+}
+
+void close_log(struct jz_log* log)
+{
+	fclose(log->filename);
+	exit(1);
 }

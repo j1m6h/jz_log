@@ -8,11 +8,7 @@ enum level
 	ERROR
 };
 
-struct jz_log
-{
-	char* filename;
-	size_t filesize; /* in bytes */
-};
+struct jz_log;
 
 /* useful if you want to break your log apart once it reaches a certain size */
 size_t get_filesize(struct jz_log* size);
@@ -20,4 +16,6 @@ size_t get_filesize(struct jz_log* size);
 void log_info(const char* txt, struct jz_log* log);
 void log_warn(const char* txt, struct jz_log* log);
 void log_err(const char* txt, struct jz_log* log);
+
+void close_log(struct jz_log* log);
 #endif
