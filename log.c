@@ -41,7 +41,6 @@ static void open_file(FILE* file, const char* path)
 	file_is_open = true;
 }
 
-
 static char* lvl_to_tag(int lvl)
 {
 	if (lvl == WARNING)
