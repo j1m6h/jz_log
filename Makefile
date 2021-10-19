@@ -3,7 +3,7 @@ CFLAGS = -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os
 LDFLAGS = -shared
 TARGET = libjz_log.so
 
-SRC = log.c 
+SRC = log.c user.c 
 OBJ = ${SRC:.c=.o}
 
 all: $(TARGET)
