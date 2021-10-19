@@ -41,18 +41,6 @@ static void get_timestamp(char* buf, size_t len)
 	strftime(buf, len, "%Y-%m-%d %H:%M:%S", timeinfo);
 }
 
-static void open_file(FILE* file, const char* path)
-{
-	file = fopen(path, "w");
-	if (file == NULL)
-	{
-		fprintf(stderr, "Could not open file for writing");
-		file_is_open = false;
-	}
-
-	file_is_open = true;
-}
-
 static char* lvl_to_tag(int lvl)
 {
 	if (lvl == WARNING)
